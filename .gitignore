@@ -1,0 +1,17 @@
+# Signing private key -- NEVER commit. Only the public key (in install.ps1) ships.
+.keys/
+*.private.xml
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build / temp artifacts
+.payload-check.tmp.js
+*.tmp.js
+
+# Backups created by the patcher at runtime
+*.bak
+
+# Local logs / state
+patch.log

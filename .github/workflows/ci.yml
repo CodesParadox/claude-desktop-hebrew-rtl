@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Unit tests (rtl-core)
+        run: npm test
+
+      - name: Syntax check (src)
+        run: npm run check
+
+      - name: Verify patch.ps1 signature
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify-signature.ps1
+
+      - name: PowerShell 5.1 parse check
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = $env:GITHUB_WORKSPACE
+          $files = @(
+            'install.ps1',
+            'patch.ps1',
+            'tools\build-payload.ps1',
+            'tools\generate-keypair.ps1',
+            'tools\sign-release.ps1',
+            'tools\verify-signature.ps1'
+          )
+          foreach ($rel in $files) {
+            $path = Join-Path $root $rel
+            if (-not (Test-Path -LiteralPath $path)) {
+              throw "Missing required script: $rel"
+            }
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+            if ($errors -and $errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_.ToString() }
+              throw "PowerShell parse errors in $rel"
+            }
+            Write-Host "OK: $rel"
+          }

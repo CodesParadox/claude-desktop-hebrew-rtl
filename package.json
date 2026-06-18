@@ -1,0 +1,15 @@
+{
+  "name": "claude-desktop-hebrew-rtl",
+  "version": "1.0.0",
+  "description": "Hebrew RTL support patch for Claude Desktop on Windows. Hebrew-only detection core (unit-tested) built into a fuse-first PowerShell patcher.",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/rtl-core.js && node --check src/rtl-payload.js",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-payload.ps1"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
